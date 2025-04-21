@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>정치인 별점 리뷰</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f9f9f9; }
+    .review-form, .reviews { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; max-width: 600px; margin: auto; }
+    .review { border-bottom: 1px solid #ddd; padding: 10px 0; }
+    .stars { color: gold; }
+    input, select { padding: 8px; width: 100%; margin-top: 4px; }
+    button { margin-top: 10px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="review-form">
+    <h2>정치인 별점 리뷰 등록</h2>
+    <label>닉네임: <input type="text" id="name" required></label><br><br>
+    <label>정치인:
+      <select id="politician" required>
+        <option value="김민수">김민수</option>
+        <option value="박영희">박영희</option>
+        <option value="이철수">이철수</option>
+        <option value="정은주">정은주</option>
+      </select>
+    </label><br><br>
+    <label>별점:
+      <select id="rating">
+        <option value="5">⭐️⭐️⭐️⭐️⭐️</option>
+        <option value="4">⭐️⭐️⭐️⭐️</option>
+        <option value="3">⭐️⭐️⭐️</option>
+        <option value="2">⭐️⭐️</option>
+        <option value="1">⭐️</option>
+      </select>
+    </label><br><br>
+    <label>한 줄 리뷰: <input type="text" id="comment" required></label><br><br>
+    <button onclick="submitReview()">리뷰 등록</button>
+  </div>
+
+  <div class="reviews">
+    <h2>전체 리뷰 목록</h2>
+    <div id="reviewsList"></div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCTBjC6XnzB4xUl9gZ6VPlx0vjqGzD-EOo",
+      authDomain: "politician-review.firebaseapp.com",
+      databaseURL: "https://politician-review-default-rtdb.firebaseio.com",
+      projectId: "politician-review",
+      storageBucket: "politician-review.firebasestorage.app",
+      messagingSenderId: "914715561802",
+      appId: "1:914715561802:web:92d081009c671225737bb3",
+      measurementId: "G-90PH3H8VV2"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function submitReview() {
+      const name = document.getElementById("name").value;
+      const politician = document.getElementById("politician").value;
+      const rating = parseInt(document.getElementById("rating").value);
+      const comment = document.getElementById("comment").value;
+
+      db.ref("reviews").push({
+        nickname: name,
+        politician: politician,
+        rating: rating,
+        comment: comment
+      });
+
+      document.getElementById("name").value = "";
+      document.getElementById("comment").value = "";
+    }
+
+    db.ref("reviews").on("child_added", (snapshot) => {
+      const data = snapshot.val();
+      const stars = "⭐️".repeat(data.rating);
+      const reviewElement = `
+        <div class="review">
+          <strong>${data.politician}</strong> (${stars})<br>
+          <em>${data.comment}</em><br>
+          <small>- ${data.nickname}</small>
+        </div>
+      `;
+      document.getElementById("reviewsList").innerHTML = reviewElement + document.getElementById("reviewsList").innerHTML;
+    });
+  </script>
+</body>
+</html>
